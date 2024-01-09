@@ -89,9 +89,14 @@ public class TSP {
         //TODO implement
         switch (distanceType) {
             case EUCLIDEAN:
-                return 0;
+                return Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2));
             case WEIGHTED:
-                return 0;
+                if (from.index < to.index)
+                    return weights[from.index - 1][to.index - 1];
+                else if (from.index > to.index)
+                    return weights[to.index - 1][from.index - 1];
+                else
+                    return 0;
             default:
                 return Double.MAX_VALUE;
         }
@@ -241,6 +246,7 @@ public class TSP {
                 System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
             }
         }
+        System.out.println(calculateDistance(start, cities.get(2)));
     }
 
     public int getMaxEvaluations() {
