@@ -154,6 +154,26 @@ public class TSP {
                         default -> System.err.println("Unknown distance type: " + distanceTypeString);
                     }
                 });
+
+        if (distanceType == DistanceType.EUCLIDEAN) {
+            lines.stream()
+                    .filter(line -> line.startsWith("NODE_COORD_SECTION"))
+                    .findFirst()
+                    .ifPresent(nodeCoordSectionLine -> {
+                        int index = lines.indexOf(nodeCoordSectionLine) + 1;
+                        for (int i = 0; i < numberOfCities; i++) {
+                            String[] cityData = lines.get(index + i).trim().split("\\s+");
+                            City city = new City();
+                            city.index = Integer.parseInt(cityData[0]);
+                            city.x = Double.parseDouble(cityData[1]);
+                            city.y = Double.parseDouble(cityData[2]);
+                            cities.add(city);
+                        }
+                    });
+            for (City city : cities) {
+                System.out.println(city.index + " " + city.x + " " + city.y);
+            }
+        }
     }
 
     public int getMaxEvaluations() {
