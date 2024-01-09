@@ -143,10 +143,11 @@ public class TSP {
                 });
 
         lines.stream()
-                .filter(line -> line.startsWith("EDGE_WEIGHT_TYPE : "))
+                .filter(line -> line.startsWith("EDGE_WEIGHT_TYPE"))
                 .findFirst()
                 .ifPresent(distanceTypeLine -> {
-                    String distanceTypeString = distanceTypeLine.substring("EDGE_WEIGHT_TYPE : ".length()).trim();
+                    String afterColon = distanceTypeLine.substring(distanceTypeLine.indexOf(':') + 1).trim();
+                    String distanceTypeString = afterColon.split("\\s+")[0]; // Extract the first word after the colon
                     System.out.println("Distance type: " + distanceTypeString);
                     switch (distanceTypeString) {
                         case "EUC_2D" -> distanceType = DistanceType.EUCLIDEAN;
@@ -155,23 +156,89 @@ public class TSP {
                     }
                 });
 
+
         if (distanceType == DistanceType.EUCLIDEAN) {
-            lines.stream()
-                    .filter(line -> line.startsWith("NODE_COORD_SECTION"))
-                    .findFirst()
-                    .ifPresent(nodeCoordSectionLine -> {
-                        int index = lines.indexOf(nodeCoordSectionLine) + 1;
-                        for (int i = 0; i < numberOfCities; i++) {
-                            String[] cityData = lines.get(index + i).trim().split("\\s+");
-                            City city = new City();
-                            city.index = Integer.parseInt(cityData[0]);
-                            city.x = Double.parseDouble(cityData[1]);
-                            city.y = Double.parseDouble(cityData[2]);
-                            cities.add(city);
+            boolean foundNodeCoordSection = false;
+            for (String line : lines) {
+                if (foundNodeCoordSection && !line.trim().equals("EOF")) {
+                    String[] cityData = line.trim().split("\\s+");
+                    if (cityData.length == 3) {
+                        City city = new City();
+                        city.index = Integer.parseInt(cityData[0]);
+                        city.x = Double.parseDouble(cityData[1]);
+                        city.y = Double.parseDouble(cityData[2]);
+                        cities.add(city);
+                    }
+                }
+                if (line.startsWith("NODE_COORD_SECTION")) {
+                    foundNodeCoordSection = true;
+                }
+            }
+
+            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
+
+            if (!cities.isEmpty()) {
+                start = cities.get(0); // Set the first city as the starting city
+                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
+            }
+        }
+
+        else if (distanceType == DistanceType.WEIGHTED) {
+            boolean foundEdgeWeightSection = false;
+            boolean foundDisplayDataSection = false;
+            List<List<Double>> weightsList = new ArrayList<>();
+
+            for (String line : lines) {
+                if (foundEdgeWeightSection && !foundDisplayDataSection && !line.trim().equals("DISPLAY_DATA_SECTION") && !line.trim().equals("EOF")) {
+                    String[] tokens = line.trim().split("\\s+");
+                    List<Double> row = new ArrayList<>();
+                    for (String token : tokens) {
+                        if (!token.isEmpty()) {
+                            row.add(Double.parseDouble(token));
                         }
-                    });
-            for (City city : cities) {
-                System.out.println(city.index + " " + city.x + " " + city.y);
+                    }
+                    weightsList.add(row);
+                }
+                if (foundDisplayDataSection && !line.trim().equals("EOF")) {
+                    String[] cityData = line.trim().split("\\s+");
+                    if (cityData.length == 3) {
+                        City city = new City();
+                        city.index = Integer.parseInt(cityData[0]);
+                        city.x = Double.parseDouble(cityData[1]);
+                        city.y = Double.parseDouble(cityData[2]);
+                        cities.add(city);
+                    }
+                }
+
+                if (line.startsWith("EDGE_WEIGHT_SECTION")) {
+                    foundEdgeWeightSection = true;
+                }
+                if (line.startsWith("DISPLAY_DATA_SECTION")) {
+                    foundDisplayDataSection = true;
+                }
+            }
+
+            // Convert the List<List<Double>> to a double[][]
+            weights = new double[weightsList.size()][weightsList.get(0).size()];
+            for (int i = 0; i < weightsList.size(); i++) {
+                for (int j = 0; j < weightsList.get(i).size(); j++) {
+                    weights[i][j] = weightsList.get(i).get(j);
+                }
+            }
+
+            // print weights
+            for (double[] weight : weights) {
+                for (double v : weight) {
+                    System.out.print(v + " ");
+                }
+                System.out.println();
+            }
+            System.out.println("Cities:");
+            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
+
+            if (!cities.isEmpty()) {
+                start = cities.get(0); // Set the first city as the starting city
+                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
             }
         }
     }
