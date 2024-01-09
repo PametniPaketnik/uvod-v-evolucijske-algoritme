@@ -125,6 +125,35 @@ public class TSP {
         }
         System.out.println(lines);
         //TODO parse data
+
+        lines.stream()
+                .filter(line -> line.startsWith("NAME : "))
+                .findFirst()
+                .ifPresent(nameLine -> {
+                    name = nameLine.substring("NAME : ".length()).trim();
+                    System.out.println("Name: " + name);
+                });
+
+        lines.stream()
+                .filter(line -> line.startsWith("DIMENSION : "))
+                .findFirst()
+                .ifPresent(dimensionLine -> {
+                    numberOfCities = Integer.parseInt(dimensionLine.substring("DIMENSION : ".length()).trim());
+                    System.out.println("Number of cities: " + numberOfCities);
+                });
+
+        lines.stream()
+                .filter(line -> line.startsWith("EDGE_WEIGHT_TYPE : "))
+                .findFirst()
+                .ifPresent(distanceTypeLine -> {
+                    String distanceTypeString = distanceTypeLine.substring("EDGE_WEIGHT_TYPE : ".length()).trim();
+                    System.out.println("Distance type: " + distanceTypeString);
+                    switch (distanceTypeString) {
+                        case "EUC_2D" -> distanceType = DistanceType.EUCLIDEAN;
+                        case "EXPLICIT" -> distanceType = DistanceType.WEIGHTED;
+                        default -> System.err.println("Unknown distance type: " + distanceTypeString);
+                    }
+                });
     }
 
     public int getMaxEvaluations() {
