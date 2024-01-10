@@ -1,4 +1,7 @@
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class GA {
 
@@ -25,6 +28,10 @@ public class GA {
             problem.evaluate(newTour);
             population.add(newTour);
             //TODO shrani najboljšega (best)
+
+            if (best == null || newTour.getDistance() < best.getDistance()) {
+                best = newTour.clone();
+            }
         }
 
         while (problem.getNumberOfEvaluations() < problem.getMaxEvaluations()) {
@@ -34,6 +41,11 @@ public class GA {
                 TSP.Tour parent1 = tournamentSelection();
                 TSP.Tour parent2 = tournamentSelection();
                 //TODO preveri, da starša nista enaka
+
+                do {
+                    parent2 = tournamentSelection();
+                } while (parent1 == parent2);
+
 
                 if (RandomUtils.nextDouble() < cr) {
                     TSP.Tour[] children = pmx(parent1, parent2);
@@ -73,6 +85,20 @@ public class GA {
 
     private TSP.Tour tournamentSelection() {
         // naključno izberi dva RAZLIČNA posameznika in vrni boljšega
-        return null;
+
+        int tournamentSize = 2;
+        List<TSP.Tour> tournamentParticipants = new ArrayList<>();
+
+        for (int i = 0; i < tournamentSize; i++) {
+            int randomIndex = RandomUtils.nextInt(population.size());
+            TSP.Tour participant = population.get(randomIndex);
+            tournamentParticipants.add(participant);
+        }
+
+        //tournamentParticipants.forEach(participant -> System.out.println(participant.getDistance()));
+
+        return Collections.min(tournamentParticipants, Comparator.comparingDouble(TSP.Tour::getDistance));
+
+        //return null;
     }
 }
