@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TSP {
@@ -104,7 +105,20 @@ public class TSP {
 
     public Tour generateTour() {
         //TODO generate random tour, use RandomUtils
-        return null;
+        Tour randomTour = new Tour(numberOfCities);
+        List<City> citiesCopy = new ArrayList<>(cities);
+
+        Collections.shuffle(citiesCopy);
+
+        randomTour.setPath(citiesCopy.toArray(new City[0]));
+
+        System.out.println();
+        for (City city : randomTour.getPath()) {
+            System.out.print(city.index + " ");
+        }
+
+        return randomTour;
+        //return null;
     }
 
     private void loadData(String path) {
