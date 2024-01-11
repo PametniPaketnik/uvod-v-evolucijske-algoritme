@@ -68,6 +68,13 @@ public class GA {
             //TODO ovrednoti populacijo in shrani najboljšega (best)
             //implementacijo lahko naredimo bolj učinkovito tako, da overdnotimo samo tiste, ki so se spremenili (mutirani in križani potomci)
 
+            for (TSP.Tour off : offspring) {
+                problem.evaluate(off);
+                if (off.getDistance() < best.getDistance()) {
+                    best = off.clone();
+                }
+            }
+
             population = new ArrayList<>(offspring);
             offspring.clear();
         }
@@ -76,10 +83,42 @@ public class GA {
 
     private void swapMutation(TSP.Tour off) {
         //izvedi mutacijo
+
+        int tourSize = off.getPath().length;
+
+        int index1 = RandomUtils.nextInt(tourSize);
+        int index2;
+
+        do {
+            index2 = RandomUtils.nextInt(tourSize);
+        } while (index1 == index2);
+
+        // Swap the cities at the chosen indices
+        TSP.City city1 = off.getPath()[index1];
+        TSP.City city2 = off.getPath()[index2];
+
+        off.setCity(index1, city2);
+        off.setCity(index2, city1);
     }
 
     private TSP.Tour[] pmx(TSP.Tour parent1, TSP.Tour parent2) {
         //izvedi pmx križanje, da ustvariš dva potomca
+
+        int tourSize = parent1.getPath().length;
+
+        int crossoverPoint1  = RandomUtils.nextInt(tourSize);
+        int crossoverPoint2;
+
+        do {
+            crossoverPoint2 = RandomUtils.nextInt(tourSize);
+        } while (crossoverPoint1 == crossoverPoint2);
+
+        if (crossoverPoint1 > crossoverPoint2) {
+            int temp = crossoverPoint1;
+            crossoverPoint1 = crossoverPoint2;
+            crossoverPoint2 = temp;
+        }
+
         return null;
     }
 
