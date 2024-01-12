@@ -37,6 +37,9 @@ public class GA {
         while (problem.getNumberOfEvaluations() < problem.getMaxEvaluations()) {
 
             //elitizem - poišči najboljšega in ga dodaj v offspring in obvezno uporabi clone()
+            TSP.Tour bestInCurrentPopulation = Collections.min(population, Comparator.comparingDouble(TSP.Tour::getDistance));
+            offspring.add(bestInCurrentPopulation.clone());
+
             while (offspring.size() < popSize) {
                 TSP.Tour parent1 = tournamentSelection();
                 TSP.Tour parent2 = tournamentSelection();
@@ -45,7 +48,6 @@ public class GA {
                 do {
                     parent2 = tournamentSelection();
                 } while (parent1 == parent2);
-
 
                 if (RandomUtils.nextDouble() < cr) {
                     TSP.Tour[] children = pmx(parent1, parent2);
@@ -74,7 +76,6 @@ public class GA {
                     best = off.clone();
                 }
             }
-
             population = new ArrayList<>(offspring);
             offspring.clear();
         }
@@ -118,7 +119,6 @@ public class GA {
             crossoverPoint1 = crossoverPoint2;
             crossoverPoint2 = temp;
         }
-
         return null;
     }
 
