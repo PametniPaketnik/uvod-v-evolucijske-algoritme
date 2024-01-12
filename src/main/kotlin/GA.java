@@ -119,7 +119,98 @@ public class GA {
             crossoverPoint1 = crossoverPoint2;
             crossoverPoint2 = temp;
         }
-        return null;
+
+        // Create two child tours by copying parents
+        TSP.Tour child1 = parent1.clone();
+        TSP.Tour child2 = parent2.clone();
+
+        for (int i = 0; i < tourSize; i++) {
+            if (i < crossoverPoint1 || i > crossoverPoint2) {
+                child1.setCity(i, null);
+                child2.setCity(i, null);
+            }
+        }
+
+        for (int i = crossoverPoint1; i <= crossoverPoint2; i++) {
+            child1.setCity(i, parent2.getPath()[i]);
+            child2.setCity(i, parent1.getPath()[i]);
+        }
+
+        for (int i = 0; i < tourSize; i++) {
+            if (i < crossoverPoint1 || i > crossoverPoint2) {
+                TSP.City cityFromParent1 = parent1.getPath()[i];
+                TSP.City cityFromParent2 = parent2.getPath()[i];
+
+                // Check if the city is not already present in child1
+                if (!containsCity(child1.getPath(), cityFromParent1, crossoverPoint1, crossoverPoint2)) {
+                    child1.setCity(i, cityFromParent1);
+                }
+
+                // Check if the city is not already present in child2
+                if (!containsCity(child2.getPath(), cityFromParent2, crossoverPoint1, crossoverPoint2)) {
+                    child2.setCity(i, cityFromParent2);
+                }
+            }
+        }
+
+        // NI PRAVILNO
+        // fill nulls with correct cities
+
+        for (int i = 0; i < tourSize; i++) {
+            if (child1.getPath()[i] == null) {
+                for (int j = 0; j < tourSize; j++) {
+                    if (!containsCity(child1.getPath(), parent2.getPath()[j], 0, tourSize - 1)) {
+                        child1.setCity(i, parent2.getPath()[j]);
+                        break;
+                    }
+                }
+            }
+            if (child2.getPath()[i] == null) {
+                for (int j = 0; j < tourSize; j++) {
+                    if (!containsCity(child2.getPath(), parent1.getPath()[j], 0, tourSize - 1)) {
+                        child2.setCity(i, parent1.getPath()[j]);
+                        break;
+                    }
+                }
+            }
+        }
+
+/*        // print parent1
+        System.out.println("\nParent1: ");
+        for (TSP.City city : parent1.getPath()) {
+            if (city == null) {
+                System.out.print("null ");
+            } else
+                System.out.print(city.index + " ");
+        }
+        // print crossover points
+        System.out.println("\nCrossover points: " + crossoverPoint1 + " " + crossoverPoint2);
+        System.out.println("Child1: ");
+        for (TSP.City city : child1.getPath()) {
+            if (city == null) {
+                System.out.print("null ");
+            } else
+                System.out.print(city.index + " ");
+        }
+        System.out.println("\nChild2: ");
+        for (TSP.City city : child2.getPath()) {
+            if (city == null) {
+                System.out.print("null ");
+            } else
+                System.out.print(city.index + " ");
+        }*/
+
+        return new TSP.Tour[]{child1, child2};
+        //return null;
+    }
+
+    private boolean containsCity(TSP.City[] array, TSP.City city, int start, int end) {
+        for (int i = start; i <= end; i++) {
+            if (array[i] == city) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private TSP.Tour tournamentSelection() {
