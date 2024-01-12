@@ -107,10 +107,10 @@ public class TSP {
 
         randomTour.setPath(citiesCopy.toArray(new City[0]));
 
-        System.out.println();
+        /*System.out.println();
         for (City city : randomTour.getPath()) {
             System.out.print(city.index + " ");
-        }
+        }*/
 
         return randomTour;
         //return null;
@@ -137,7 +137,7 @@ public class TSP {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(lines);
+//        System.out.println(lines);
         //TODO parse data
 
         lines.stream()
@@ -145,7 +145,7 @@ public class TSP {
                 .findFirst()
                 .ifPresent(nameLine -> {
                     name = nameLine.substring("NAME : ".length()).trim();
-                    System.out.println("Name: " + name);
+//                    System.out.println("Name: " + name);
                 });
 
         lines.stream()
@@ -155,7 +155,7 @@ public class TSP {
                     String afterColon = dimensionLine.substring(dimensionLine.indexOf(':') + 1).trim();
                     String distanceTypeString = afterColon.split("\s+")[0]; // Extract the first word after the colon
                     numberOfCities = Integer.parseInt(distanceTypeString);
-                    System.out.println("Number of cities: " + numberOfCities);
+//                    System.out.println("Number of cities: " + numberOfCities);
                 });
 
         lines.stream()
@@ -164,7 +164,7 @@ public class TSP {
                 .ifPresent(distanceTypeLine -> {
                     String afterColon = distanceTypeLine.substring(distanceTypeLine.indexOf(':') + 1).trim();
                     String distanceTypeString = afterColon.split("\\s+")[0]; // Extract the first word after the colon
-                    System.out.println("Distance type: " + distanceTypeString);
+//                    System.out.println("Distance type: " + distanceTypeString);
                     switch (distanceTypeString) {
                         case "EUC_2D" -> distanceType = DistanceType.EUCLIDEAN;
                         case "EXPLICIT" -> distanceType = DistanceType.WEIGHTED;
@@ -191,11 +191,11 @@ public class TSP {
                 }
             }
 
-            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
+//            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
 
             if (!cities.isEmpty()) {
                 start = cities.get(0); // Set the first city as the starting city
-                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
+//                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
             }
         }
 
@@ -243,21 +243,21 @@ public class TSP {
             }
 
             // print weights
-            for (double[] weight : weights) {
+            /*for (double[] weight : weights) {
                 for (double v : weight) {
                     System.out.print(v + " ");
                 }
                 System.out.println();
             }
-            System.out.println("Cities:");
-            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
+            System.out.println("Cities:");*/
+//            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
 
             if (!cities.isEmpty()) {
                 start = cities.get(0); // Set the first city as the starting city
-                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
+//                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
             }
         }
-        System.out.println(calculateDistance(start, cities.get(2)));
+//        System.out.println(calculateDistance(start, cities.get(2)));
     }
 
     public int getMaxEvaluations() {
