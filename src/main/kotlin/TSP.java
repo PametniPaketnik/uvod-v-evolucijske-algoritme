@@ -154,10 +154,12 @@ public class TSP {
                 });
 
         lines.stream()
-                .filter(line -> line.startsWith("DIMENSION : "))
+                .filter(line -> line.startsWith("DIMENSION"))
                 .findFirst()
                 .ifPresent(dimensionLine -> {
-                    numberOfCities = Integer.parseInt(dimensionLine.substring("DIMENSION : ".length()).trim());
+                    String afterColon = dimensionLine.substring(dimensionLine.indexOf(':') + 1).trim();
+                    String distanceTypeString = afterColon.split("\s+")[0]; // Extract the first word after the colon
+                    numberOfCities = Integer.parseInt(distanceTypeString);
                     System.out.println("Number of cities: " + numberOfCities);
                 });
 
