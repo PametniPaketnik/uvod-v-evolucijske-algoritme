@@ -2,10 +2,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -57,66 +54,87 @@ public class PDFRead {
         }
     }
 
+
     private static void callDistanceMatrixAPI(Vector<Location> locations) {
-        String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg";
+        String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg"; // Please replace with your actual API key
 
-        for (Location originLocation : locations) {
-            for (Location destinationLocation : locations) {
-                if (!originLocation.equals(destinationLocation)) {
+        double[][] distanceMatrix = new double[locations.size()][locations.size()];
 
-                    String origin = originLocation.getAddress() + " " + originLocation.getPostOfficeName() + " " + originLocation.getPostalCode();
-                    String destination = destinationLocation.getAddress() + " " + destinationLocation.getPostOfficeName() + " " + destinationLocation.getPostalCode();
+        try {
+            FileWriter fileWriter = new FileWriter("distance_matrix.txt");
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
-                    try {
-                        String urlString = "https://maps.googleapis.com/maps/api/distancematrix/json"
-                                + "?origins=" + URLEncoder.encode(origin, "UTF-8")
-                                + "&destinations=" + URLEncoder.encode(destination, "UTF-8")
-                                + "&key=" + apiKey;
+            for (int i = 0; i < locations.size(); i++) {
+                for (int j = 0; j < locations.size(); j++) {
+                    if (i != j) {
+                        Location originLocation = locations.get(i);
+                        Location destinationLocation = locations.get(j);
 
-                        URL url = new URL(urlString);
+                        String origin = originLocation.getAddress() + " " + originLocation.getPostOfficeName() + " " + originLocation.getPostalCode();
+                        String destination = destinationLocation.getAddress() + " " + destinationLocation.getPostOfficeName() + " " + destinationLocation.getPostalCode();
 
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        try {
+                            String urlString = "https://maps.googleapis.com/maps/api/distancematrix/json"
+                                    + "?origins=" + URLEncoder.encode(origin, "UTF-8")
+                                    + "&destinations=" + URLEncoder.encode(destination, "UTF-8")
+                                    + "&key=" + apiKey;
 
-                        connection.setRequestMethod("GET");
+                            URL url = new URL(urlString);
+                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                            connection.setRequestMethod("GET");
 
-                        int responseCode = connection.getResponseCode();
+                            int responseCode = connection.getResponseCode();
 
+                            if (responseCode == HttpURLConnection.HTTP_OK) {
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                                String line;
+                                StringBuilder response = new StringBuilder();
 
-                        if (responseCode == HttpURLConnection.HTTP_OK) {
+                                while ((line = reader.readLine()) != null) {
+                                    response.append(line);
+                                }
 
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                            String line;
-                            StringBuilder response = new StringBuilder();
+                                reader.close();
+                                JSONObject jsonObject = new JSONObject(response.toString());
+                                int distanceMeters = jsonObject.getJSONArray("rows")
+                                        .getJSONObject(0)
+                                        .getJSONArray("elements")
+                                        .getJSONObject(0)
+                                        .getJSONObject("distance")
+                                        .getInt("value");
 
-                            while ((line = reader.readLine()) != null) {
-                                response.append(line);
+                                // Convert meters to kilometers and round to 1 decimal place
+                                double distanceKilometers = Math.round(distanceMeters / 100.0) / 10.0;
+                                distanceMatrix[i][j] = distanceKilometers;
+
+                            } else {
+                                System.out.println("Error: " + responseCode);
+                                distanceMatrix[i][j] = -1; // Indicate an error
                             }
 
-                            reader.close();
+                            connection.disconnect();
 
-                            System.out.println("From " + origin + " to " + destination + ": " + response.toString());
-                            JSONObject jsonObject = new JSONObject(response.toString());
-                            int distanceText = jsonObject.getJSONArray("rows")
-                                    .getJSONObject(0)
-                                    .getJSONArray("elements")
-                                    .getJSONObject(0)
-                                    .getJSONObject("distance")
-                                    .getInt("value");
-                            System.out.printf("Distance: %.1f %n", distanceText / 1000.0);
-
-                        } else {
-                            System.out.println("Error: " + responseCode);
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                            distanceMatrix[i][j] = -1; // Indicate an error
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            distanceMatrix[i][j] = -1; // Indicate an error
                         }
-
-                        connection.disconnect();
-
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } else {
+                        // If origin and destination are the same, the distance is 0
+                        distanceMatrix[i][j] = 0.0;
                     }
+
+                    // Write the distance to the file
+                    bufferedWriter.write(distanceMatrix[i][j] + (j == locations.size() - 1 ? "\n" : "\t"));
                 }
             }
+
+            bufferedWriter.close();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
