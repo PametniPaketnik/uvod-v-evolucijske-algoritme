@@ -1,5 +1,6 @@
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,8 +49,6 @@ public class PDFRead {
             for (Location location : locations) {
                 System.out.println(location.getPostalCode() + " " + location.getPostOfficeName() + " " + location.getAddress());
 
-                //location.callDistanceMatrixAPI();
-                //callDistanceMatrixAPI(location);
             }
             callDistanceMatrixAPI(locations);
 
@@ -59,18 +58,16 @@ public class PDFRead {
     }
 
     private static void callDistanceMatrixAPI(Vector<Location> locations) {
-        // Replace YOUR_API_KEY with your actual Google API key
         String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg";
 
         for (Location originLocation : locations) {
             for (Location destinationLocation : locations) {
                 if (!originLocation.equals(destinationLocation)) {
-                    // Pripravi izvor in cilj za API klic
+
                     String origin = originLocation.getAddress() + " " + originLocation.getPostOfficeName() + " " + originLocation.getPostalCode();
                     String destination = destinationLocation.getAddress() + " " + destinationLocation.getPostOfficeName() + " " + destinationLocation.getPostalCode();
 
                     try {
-                        // Konstruiraj URL za Distance Matrix API
                         String urlString = "https://maps.googleapis.com/maps/api/distancematrix/json"
                                 + "?origins=" + URLEncoder.encode(origin, "UTF-8")
                                 + "&destinations=" + URLEncoder.encode(destination, "UTF-8")
@@ -78,18 +75,15 @@ public class PDFRead {
 
                         URL url = new URL(urlString);
 
-                        // Ustvari HTTP povezavo
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-                        // Nastavi metodo zahteve
                         connection.setRequestMethod("GET");
 
-                        // Pridobi odzivni kod
                         int responseCode = connection.getResponseCode();
 
-                        // Preberi odziv
+
                         if (responseCode == HttpURLConnection.HTTP_OK) {
-                            // Obdelaj odziv
+
                             BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                             String line;
                             StringBuilder response = new StringBuilder();
@@ -100,13 +94,20 @@ public class PDFRead {
 
                             reader.close();
 
-                            // Izpiši razdaljo
-                            System.out.println("Od " + origin + " do " + destination + ": " + response.toString());
+                            System.out.println("From " + origin + " to " + destination + ": " + response.toString());
+                            JSONObject jsonObject = new JSONObject(response.toString());
+                            String distanceText = jsonObject.getJSONArray("rows")
+                                    .getJSONObject(0)
+                                    .getJSONArray("elements")
+                                    .getJSONObject(0)
+                                    .getJSONObject("distance")
+                                    .getString("text");
+                            System.out.println("Distance: " + distanceText);
+
                         } else {
                             System.out.println("Error: " + responseCode);
                         }
 
-                        // Zapri povezavo
                         connection.disconnect();
 
                     } catch (MalformedURLException e) {
@@ -118,7 +119,4 @@ public class PDFRead {
             }
         }
     }
-
-
-
 }
