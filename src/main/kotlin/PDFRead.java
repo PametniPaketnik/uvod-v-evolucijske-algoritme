@@ -96,13 +96,13 @@ public class PDFRead {
 
                             System.out.println("From " + origin + " to " + destination + ": " + response.toString());
                             JSONObject jsonObject = new JSONObject(response.toString());
-                            String distanceText = jsonObject.getJSONArray("rows")
+                            int distanceText = jsonObject.getJSONArray("rows")
                                     .getJSONObject(0)
                                     .getJSONArray("elements")
                                     .getJSONObject(0)
                                     .getJSONObject("distance")
-                                    .getString("text");
-                            System.out.println("Distance: " + distanceText);
+                                    .getInt("value");
+                            System.out.printf("Distance: %.1f %n", distanceText / 1000.0);
 
                         } else {
                             System.out.println("Error: " + responseCode);
