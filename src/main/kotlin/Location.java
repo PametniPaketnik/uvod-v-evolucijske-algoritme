@@ -1,3 +1,4 @@
+
 public class Location {
     private int postalCode;
     private String postOfficeName;
@@ -23,5 +24,6 @@ public class Location {
     public String getAddress() {
         return address;
     }
+
 
 }
