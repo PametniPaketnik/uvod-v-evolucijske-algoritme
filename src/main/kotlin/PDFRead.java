@@ -49,8 +49,9 @@ public class PDFRead {
 
             }
             //callDistanceMatrixAPI(locations);
-            callDurationMatrixAPI(locations);
+            //callDurationMatrixAPI(locations);
             //writeCoordinatesToFile(locations);
+            writeLocationsToFile(locations);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -311,5 +312,25 @@ public class PDFRead {
         return null;
     }
 
+    private static void writeLocationsToFile(Vector<Location> locations) {
+        try {
+            FileWriter fileWriter = new FileWriter("src/main/resources/realProblem96_data.tsp");
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
+            bufferedWriter.write("NAME : realProblem96\n");
+            bufferedWriter.write("TYPE : TSP\n");
+            bufferedWriter.write("DIMENSIONS : 96\n");
+            bufferedWriter.write("DATA\n");
+
+            int i = 1;
+            for (Location location : locations) {
+                bufferedWriter.write(i++ + " " + location.getAddress() + "\n");
+            }
+
+            bufferedWriter.close();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
