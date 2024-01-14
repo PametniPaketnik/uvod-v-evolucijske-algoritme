@@ -261,7 +261,7 @@ public class PDFRead {
 
                 if (coords != null)
                 {
-                    bufferedWriter.write(String.format(Locale.ENGLISH, "%d %s%n", nodeNumber++, address));
+                    bufferedWriter.write(String.format(Locale.ENGLISH, "%d %s%n", nodeNumber++, location.getAddress()));
                     bufferedWriter.write(String.format(Locale.ENGLISH, "%f %f%n", coords[0], coords[1]));
                 }
             }
