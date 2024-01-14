@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -47,7 +48,9 @@ public class PDFRead {
                 System.out.println(location.getPostalCode() + " " + location.getPostOfficeName() + " " + location.getAddress());
 
             }
-            callDistanceMatrixAPI(locations);
+            //callDistanceMatrixAPI(locations);
+            //callDurationMatrixAPI(locations);
+            writeCoordinatesToFile(locations);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -137,4 +140,156 @@ public class PDFRead {
             e.printStackTrace();
         }
     }
+
+    private static void callDurationMatrixAPI(Vector<Location> locations) {
+        String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg"; // Please replace with your actual API key
+
+        double[][] durationMatrix = new double[locations.size()][locations.size()];
+
+        try {
+            FileWriter fileWriter = new FileWriter("duration_matrix.txt");
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            for (int i = 0; i < locations.size(); i++) {
+                for (int j = 0; j < locations.size(); j++) {
+                    if (i != j) {
+                        Location originLocation = locations.get(i);
+                        Location destinationLocation = locations.get(j);
+
+                        String origin = originLocation.getAddress() + " " + originLocation.getPostOfficeName() + " " + originLocation.getPostalCode();
+                        String destination = destinationLocation.getAddress() + " " + destinationLocation.getPostOfficeName() + " " + destinationLocation.getPostalCode();
+
+                        try {
+                            String urlString = "https://maps.googleapis.com/maps/api/distancematrix/json"
+                                    + "?origins=" + URLEncoder.encode(origin, "UTF-8")
+                                    + "&destinations=" + URLEncoder.encode(destination, "UTF-8")
+                                    + "&key=" + apiKey;
+
+                            URL url = new URL(urlString);
+                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                            connection.setRequestMethod("GET");
+
+                            int responseCode = connection.getResponseCode();
+
+                            if (responseCode == HttpURLConnection.HTTP_OK) {
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                                String line;
+                                StringBuilder response = new StringBuilder();
+
+                                while ((line = reader.readLine()) != null) {
+                                    response.append(line);
+                                }
+
+                                reader.close();
+                                JSONObject jsonObject = new JSONObject(response.toString());
+                                int durationSeconds = jsonObject.getJSONArray("rows")
+                                        .getJSONObject(0)
+                                        .getJSONArray("elements")
+                                        .getJSONObject(0)
+                                        .getJSONObject("duration")
+                                        .getInt("value");
+
+                                // Convert seconds to minutes and round to 1 decimal place
+                                double durationMinutes = Math.round(durationSeconds / 6.0) / 10.0;
+                                durationMatrix[i][j] = durationMinutes;
+
+                            } else {
+                                System.out.println("Error: " + responseCode);
+                                durationMatrix[i][j] = -1; // Indicate an error
+                            }
+
+                            connection.disconnect();
+
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                            durationMatrix[i][j] = -1; // Indicate an error
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            durationMatrix[i][j] = -1; // Indicate an error
+                        }
+                    } else {
+                        // If origin and destination are the same, the duration is 0
+                        durationMatrix[i][j] = 0.0;
+                    }
+
+                    // Write the duration to the file
+                    bufferedWriter.write(durationMatrix[i][j] + (j == locations.size() - 1 ? "\n" : "\t"));
+                }
+            }
+
+            bufferedWriter.close();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void writeCoordinatesToFile(Vector<Location> locations) {
+        String apiKey = "AIzaSyC2a1IxcFw_Lb3qGwM3t6NlK4osuXKOhR4"; // Replace with your actual API key
+
+        try {
+            FileWriter fileWriter = new FileWriter("coordinates.txt");
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            bufferedWriter.write("NODE_COORD_SECTION\n");
+
+            int nodeNumber = 1;
+            for (Location location : locations) {
+                String address = location.getAddress() + " " + location.getPostOfficeName() + " " + location.getPostalCode();
+                double[] coords = getCoordinatesFromAddress(address, apiKey);
+
+                if (coords != null) {
+                    bufferedWriter.write(String.format(Locale.ENGLISH, " %d %f %f%n", nodeNumber++, coords[0], coords[1]));
+                }
+            }
+
+            bufferedWriter.close();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static double[] getCoordinatesFromAddress(String address, String apiKey) {
+        try {
+            String urlString = "https://maps.googleapis.com/maps/api/geocode/json"
+                    + "?address=" + URLEncoder.encode(address, "UTF-8")
+                    + "&key=" + apiKey;
+
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String line;
+                StringBuilder response = new StringBuilder();
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                reader.close();
+
+                JSONObject jsonObject = new JSONObject(response.toString());
+                JSONObject location = jsonObject.getJSONArray("results")
+                        .getJSONObject(0)
+                        .getJSONObject("geometry")
+                        .getJSONObject("location");
+
+                double lat = location.getDouble("lat");
+                double lng = location.getDouble("lng");
+
+                return new double[]{lat, lng};
+            } else {
+                System.out.println("Geocoding API request failed with response code: " + responseCode);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 }
