@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class TSP {
 
@@ -46,6 +47,14 @@ public class TSP {
 
         public City[] getPath() {
             return path;
+        }
+
+        public int[] getPathIndexes() {
+            int[] pathIndexes = new int[dimension];
+            for (int i = 0; i < dimension; i++) {
+                pathIndexes[i] = path[i].index;
+            }
+            return pathIndexes;
         }
 
         public void setPath(City[] path) {
@@ -172,6 +181,74 @@ public class TSP {
                     }
                 });
 
+        if (Objects.equals(name, "realProblem96")) {
+            System.out.println("Name: " + name);
+            boolean foundNodeCoordSection = false;
+            for (String line : lines) {
+                if (foundNodeCoordSection && !line.trim().equals("EOF")) {
+                    String[] cityData = line.trim().split("\\s+");
+                    if (cityData.length == 3) {
+                        City city = new City();
+                        city.index = Integer.parseInt(cityData[0]);
+                        city.x = Double.parseDouble(cityData[1]);
+                        city.y = Double.parseDouble(cityData[2]);
+                        cities.add(city);
+                    }
+                }
+                if (line.startsWith("NODE_COORD_SECTION")) {
+                    foundNodeCoordSection = true;
+                }
+            }
+
+//            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
+
+            if (!cities.isEmpty()) {
+                start = cities.get(0); // Set the first city as the starting city
+//                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
+            }
+
+            // load weights from txt file
+            InputStream inputStreamMatrix = TSP.class.getClassLoader().getResourceAsStream("distance_matrix.tsp");
+            if(inputStreamMatrix == null) {
+                System.err.println("File distance_matrix.tsp not found!");
+                return;
+            }
+
+            List<String> linesMatrix = new ArrayList<>();
+            try(BufferedReader br = new BufferedReader(new InputStreamReader(inputStreamMatrix))) {
+
+                String line = br.readLine();
+                while (line != null) {
+                    linesMatrix.add(line);
+                    line = br.readLine();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //System.out.println(linesMatrix);
+
+            // read weights
+            List<List<Double>> weightsList = new ArrayList<>();
+            for (String line : linesMatrix) {
+                String[] tokens = line.trim().split("\\s+");
+                List<Double> row = new ArrayList<>();
+                for (String token : tokens) {
+                    if (!token.isEmpty()) {
+                        row.add(Double.parseDouble(token));
+                    }
+                }
+                weightsList.add(row);
+            }
+
+            weights = new double[weightsList.size()][weightsList.get(0).size()];
+            for (int i = 0; i < weightsList.size(); i++) {
+                for (int j = 0; j < weightsList.get(i).size(); j++) {
+                    weights[i][j] = weightsList.get(i).get(j);
+                }
+            }
+            return;
+        }
 
         if (distanceType == DistanceType.EUCLIDEAN) {
             boolean foundNodeCoordSection = false;
