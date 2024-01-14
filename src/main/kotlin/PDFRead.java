@@ -49,8 +49,8 @@ public class PDFRead {
 
             }
             //callDistanceMatrixAPI(locations);
-            //callDurationMatrixAPI(locations);
-            writeCoordinatesToFile(locations);
+            callDurationMatrixAPI(locations);
+            //writeCoordinatesToFile(locations);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -61,14 +61,21 @@ public class PDFRead {
     private static void callDistanceMatrixAPI(Vector<Location> locations) {
         String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg"; // Please replace with your actual API key
 
-        double[][] distanceMatrix = new double[locations.size()][locations.size()];
+        double[][] distanceMatrix = new double[96][96]; // Initialize 96x96 matrix
+
+        // Fill the matrix with default values
+        for (int i = 0; i < 96; i++) {
+            for (int j = 0; j < 96; j++) {
+                distanceMatrix[i][j] = (i == j) ? 0 : -1; // 0 for same location, -1 for others
+            }
+        }
 
         try {
             FileWriter fileWriter = new FileWriter("distance_matrix.txt");
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
-            for (int i = 0; i < locations.size(); i++) {
-                for (int j = 0; j < locations.size(); j++) {
+            for (int i = 0; i < Math.min(locations.size(), 96); i++) {
+                for (int j = 0; j < Math.min(locations.size(), 96); j++) {
                     if (i != j) {
                         Location originLocation = locations.get(i);
                         Location destinationLocation = locations.get(j);
@@ -132,6 +139,7 @@ public class PDFRead {
                     // Write the distance to the file
                     bufferedWriter.write(distanceMatrix[i][j] + (j == locations.size() - 1 ? "\n" : "\t"));
                 }
+                System.out.println("Completed line: " + (i + 1));
             }
 
             bufferedWriter.close();
@@ -144,14 +152,20 @@ public class PDFRead {
     private static void callDurationMatrixAPI(Vector<Location> locations) {
         String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg"; // Please replace with your actual API key
 
-        double[][] durationMatrix = new double[locations.size()][locations.size()];
+        double[][] durationMatrix = new double[96][96]; // Initialize 96x96 matrix
 
+        // Fill the matrix with default values
+        for (int i = 0; i < 96; i++) {
+            for (int j = 0; j < 96; j++) {
+                durationMatrix[i][j] = (i == j) ? 0 : -1; // 0 for same location, -1 for others
+            }
+        }
         try {
             FileWriter fileWriter = new FileWriter("duration_matrix.txt");
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
-            for (int i = 0; i < locations.size(); i++) {
-                for (int j = 0; j < locations.size(); j++) {
+            for (int i = 0; i < Math.min(locations.size(), 96); i++) {
+                for (int j = 0; j < Math.min(locations.size(), 96); j++) {
                     if (i != j) {
                         Location originLocation = locations.get(i);
                         Location destinationLocation = locations.get(j);
@@ -215,6 +229,7 @@ public class PDFRead {
                     // Write the duration to the file
                     bufferedWriter.write(durationMatrix[i][j] + (j == locations.size() - 1 ? "\n" : "\t"));
                 }
+                System.out.println("Completed line: " + (i + 1));
             }
 
             bufferedWriter.close();
