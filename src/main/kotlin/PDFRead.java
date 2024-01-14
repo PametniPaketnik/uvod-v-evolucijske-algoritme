@@ -243,9 +243,14 @@ public class PDFRead {
         String apiKey = "AIzaSyC2a1IxcFw_Lb3qGwM3t6NlK4osuXKOhR4"; // Replace with your actual API key
 
         try {
-            FileWriter fileWriter = new FileWriter("coordinates.txt");
+            FileWriter fileWriter = new FileWriter("src/main/resources/realProblem96.tsp");
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
+            bufferedWriter.write("NAME : realProblem96\n");
+            bufferedWriter.write("TYPE : TSP\n");
+            bufferedWriter.write("DIMENSIONS : 96\n");
+            bufferedWriter.write("EDGE_WEIGHT_TYPE : EXPLICIT\n");
+            bufferedWriter.write("EDGE_WEIGHT_FORMAT : FULL_MATRIX\n");
             bufferedWriter.write("NODE_COORD_SECTION\n");
 
             int nodeNumber = 1;
@@ -254,7 +259,7 @@ public class PDFRead {
                 double[] coords = getCoordinatesFromAddress(address, apiKey);
 
                 if (coords != null) {
-                    bufferedWriter.write(String.format(Locale.ENGLISH, " %d %f %f%n", nodeNumber++, coords[0], coords[1]));
+                    bufferedWriter.write(String.format(Locale.ENGLISH, "%d %f %f%n", nodeNumber++, coords[0], coords[1]));
                 }
             }
 
