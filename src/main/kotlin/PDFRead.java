@@ -50,8 +50,8 @@ public class PDFRead {
             }
             //callDistanceMatrixAPI(locations);
             //callDurationMatrixAPI(locations);
-            //writeCoordinatesToFile(locations);
-            writeLocationsToFile(locations);
+            writeCoordinatesToFile(locations);
+            //writeLocationsToFile(locations);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -244,7 +244,7 @@ public class PDFRead {
         String apiKey = "AIzaSyC2a1IxcFw_Lb3qGwM3t6NlK4osuXKOhR4"; // Replace with your actual API key
 
         try {
-            FileWriter fileWriter = new FileWriter("src/main/resources/realProblem96.tsp");
+            FileWriter fileWriter = new FileWriter("src/main/resources/realProblem96_data1.tsp");
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             bufferedWriter.write("NAME : realProblem96\n");
@@ -259,8 +259,10 @@ public class PDFRead {
                 String address = location.getAddress() + " " + location.getPostOfficeName() + " " + location.getPostalCode();
                 double[] coords = getCoordinatesFromAddress(address, apiKey);
 
-                if (coords != null) {
-                    bufferedWriter.write(String.format(Locale.ENGLISH, "%d %f %f%n", nodeNumber++, coords[0], coords[1]));
+                if (coords != null)
+                {
+                    bufferedWriter.write(String.format(Locale.ENGLISH, "%d %s%n", nodeNumber++, location.getAddress()));
+                    bufferedWriter.write(String.format(Locale.ENGLISH, "%f %f%n", coords[0], coords[1]));
                 }
             }
 
