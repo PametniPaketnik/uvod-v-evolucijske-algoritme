@@ -47,10 +47,10 @@ public class PDFRead {
                 System.out.println(location.getPostalCode() + " " + location.getPostOfficeName() + " " + location.getAddress());
 
             }
+
             //callDistanceMatrixAPI(locations);
             //callDurationMatrixAPI(locations);
-            writeCoordinatesToFile(locations);
-            //writeLocationsToFile(locations);
+            //writeToFile(locations, false);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -231,39 +231,6 @@ public class PDFRead {
         }
     }
 
-    private static void writeCoordinatesToFile(Vector<Location> locations) {
-        String apiKey = "AIzaSyC2a1IxcFw_Lb3qGwM3t6NlK4osuXKOhR4";
-
-        try {
-            FileWriter fileWriter = new FileWriter("src/main/resources/realProblem96_data1.tsp");
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
-            bufferedWriter.write("NAME : realProblem96\n");
-            bufferedWriter.write("TYPE : TSP\n");
-            bufferedWriter.write("DIMENSIONS : 96\n");
-            bufferedWriter.write("EDGE_WEIGHT_TYPE : EXPLICIT\n");
-            bufferedWriter.write("EDGE_WEIGHT_FORMAT : FULL_MATRIX\n");
-            bufferedWriter.write("NODE_COORD_SECTION\n");
-
-            int nodeNumber = 1;
-            for (Location location : locations) {
-                String address = location.getAddress() + " " + location.getPostOfficeName() + " " + location.getPostalCode();
-                double[] coords = getCoordinatesFromAddress(address, apiKey);
-
-                if (coords != null)
-                {
-                    bufferedWriter.write(String.format(Locale.ENGLISH, "%d %s%n", nodeNumber++, location.getAddress()));
-                    bufferedWriter.write(String.format(Locale.ENGLISH, "%f %f%n", coords[0], coords[1]));
-                }
-            }
-
-            bufferedWriter.close();
-            fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private static double[] getCoordinatesFromAddress(String address, String apiKey) {
         try {
             String urlString = "https://maps.googleapis.com/maps/api/geocode/json"
@@ -305,19 +272,40 @@ public class PDFRead {
         return null;
     }
 
-    private static void writeLocationsToFile(Vector<Location> locations) {
+    private static void writeToFile(Vector<Location> locations, Boolean writeCoordinates) {
+        String apiKey = "AIzaSyC2a1IxcFw_Lb3qGwM3t6NlK4osuXKOhR4";
+
         try {
-            FileWriter fileWriter = new FileWriter("src/main/resources/realProblem96_data.tsp");
+            FileWriter fileWriter = new FileWriter("src/main/resources/realProblem96_dataTEST.tsp");
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             bufferedWriter.write("NAME : realProblem96\n");
             bufferedWriter.write("TYPE : TSP\n");
             bufferedWriter.write("DIMENSIONS : 96\n");
-            bufferedWriter.write("DATA\n");
+            if (writeCoordinates) {
+                bufferedWriter.write("EDGE_WEIGHT_TYPE : EXPLICIT\n");
+                bufferedWriter.write("EDGE_WEIGHT_FORMAT : FULL_MATRIX\n");
+                bufferedWriter.write("NODE_COORD_SECTION\n");
+            }
+            else {
+                bufferedWriter.write("DATA\n");
+            }
 
-            int i = 1;
+            int nodeNumber = 1;
             for (Location location : locations) {
-                bufferedWriter.write(i++ + " " + location.getAddress() + "\n");
+
+                if(writeCoordinates) {
+                    String address = location.getAddress() + " " + location.getPostOfficeName() + " " + location.getPostalCode();
+                    double[] coords = getCoordinatesFromAddress(address, apiKey);
+
+                    if (coords != null) {
+                        //bufferedWriter.write(String.format(Locale.ENGLISH, "%d %s%n", nodeNumber++, location.getAddress()));
+                        bufferedWriter.write(String.format(Locale.ENGLISH, "%d %f %f%n", nodeNumber++, coords[0], coords[1]));
+                    }
+                }
+                else {
+                    bufferedWriter.write(nodeNumber++ + " " + location.getAddress() + "\n");
+                }
             }
 
             bufferedWriter.close();
