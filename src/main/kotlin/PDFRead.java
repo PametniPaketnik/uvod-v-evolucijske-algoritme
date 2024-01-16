@@ -4,9 +4,9 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.Vector;
@@ -43,7 +43,6 @@ public class PDFRead {
             document.close();
             scanner.close();
 
-            // For demonstration, print out the locations
             for (Location location : locations) {
                 System.out.println(location.getPostalCode() + " " + location.getPostOfficeName() + " " + location.getAddress());
 
@@ -60,14 +59,13 @@ public class PDFRead {
 
 
     private static void callDistanceMatrixAPI(Vector<Location> locations) {
-        String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg"; // Please replace with your actual API key
+        String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg";
 
-        double[][] distanceMatrix = new double[96][96]; // Initialize 96x96 matrix
+        double[][] distanceMatrix = new double[96][96];
 
-        // Fill the matrix with default values
         for (int i = 0; i < 96; i++) {
             for (int j = 0; j < 96; j++) {
-                distanceMatrix[i][j] = (i == j) ? 0 : -1; // 0 for same location, -1 for others
+                distanceMatrix[i][j] = (i == j) ? 0 : -1;
             }
         }
 
@@ -86,8 +84,8 @@ public class PDFRead {
 
                         try {
                             String urlString = "https://maps.googleapis.com/maps/api/distancematrix/json"
-                                    + "?origins=" + URLEncoder.encode(origin, "UTF-8")
-                                    + "&destinations=" + URLEncoder.encode(destination, "UTF-8")
+                                    + "?origins=" + URLEncoder.encode(origin, StandardCharsets.UTF_8)
+                                    + "&destinations=" + URLEncoder.encode(destination, StandardCharsets.UTF_8)
                                     + "&key=" + apiKey;
 
                             URL url = new URL(urlString);
@@ -120,17 +118,14 @@ public class PDFRead {
 
                             } else {
                                 System.out.println("Error: " + responseCode);
-                                distanceMatrix[i][j] = -1; // Indicate an error
+                                distanceMatrix[i][j] = -1;
                             }
 
                             connection.disconnect();
 
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                            distanceMatrix[i][j] = -1; // Indicate an error
                         } catch (IOException e) {
                             e.printStackTrace();
-                            distanceMatrix[i][j] = -1; // Indicate an error
+                            distanceMatrix[i][j] = -1;
                         }
                     } else {
                         // If origin and destination are the same, the distance is 0
@@ -151,11 +146,10 @@ public class PDFRead {
     }
 
     private static void callDurationMatrixAPI(Vector<Location> locations) {
-        String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg"; // Please replace with your actual API key
+        String apiKey = "AIzaSyBCyU6ZIp7eOLS9Zuc9GErl8pPgsJNLwyg";
 
-        double[][] durationMatrix = new double[96][96]; // Initialize 96x96 matrix
+        double[][] durationMatrix = new double[96][96];
 
-        // Fill the matrix with default values
         for (int i = 0; i < 96; i++) {
             for (int j = 0; j < 96; j++) {
                 durationMatrix[i][j] = (i == j) ? 0 : -1; // 0 for same location, -1 for others
@@ -176,8 +170,8 @@ public class PDFRead {
 
                         try {
                             String urlString = "https://maps.googleapis.com/maps/api/distancematrix/json"
-                                    + "?origins=" + URLEncoder.encode(origin, "UTF-8")
-                                    + "&destinations=" + URLEncoder.encode(destination, "UTF-8")
+                                    + "?origins=" + URLEncoder.encode(origin, StandardCharsets.UTF_8)
+                                    + "&destinations=" + URLEncoder.encode(destination, StandardCharsets.UTF_8)
                                     + "&key=" + apiKey;
 
                             URL url = new URL(urlString);
@@ -210,14 +204,11 @@ public class PDFRead {
 
                             } else {
                                 System.out.println("Error: " + responseCode);
-                                durationMatrix[i][j] = -1; // Indicate an error
+                                durationMatrix[i][j] = -1;
                             }
 
                             connection.disconnect();
 
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                            durationMatrix[i][j] = -1; // Indicate an error
                         } catch (IOException e) {
                             e.printStackTrace();
                             durationMatrix[i][j] = -1; // Indicate an error
@@ -241,7 +232,7 @@ public class PDFRead {
     }
 
     private static void writeCoordinatesToFile(Vector<Location> locations) {
-        String apiKey = "AIzaSyC2a1IxcFw_Lb3qGwM3t6NlK4osuXKOhR4"; // Replace with your actual API key
+        String apiKey = "AIzaSyC2a1IxcFw_Lb3qGwM3t6NlK4osuXKOhR4";
 
         try {
             FileWriter fileWriter = new FileWriter("src/main/resources/realProblem96_data1.tsp");
@@ -276,7 +267,7 @@ public class PDFRead {
     private static double[] getCoordinatesFromAddress(String address, String apiKey) {
         try {
             String urlString = "https://maps.googleapis.com/maps/api/geocode/json"
-                    + "?address=" + URLEncoder.encode(address, "UTF-8")
+                    + "?address=" + URLEncoder.encode(address, StandardCharsets.UTF_8)
                     + "&key=" + apiKey;
 
             URL url = new URL(urlString);
