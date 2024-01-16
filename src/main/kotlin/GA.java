@@ -27,7 +27,7 @@ public class GA {
             TSP.Tour newTour = problem.generateTour();
             problem.evaluate(newTour);
             population.add(newTour);
-            //TODO shrani najboljšega (best)
+            //DONE shrani najboljšega (best)
 
             if (best == null || newTour.getDistance() < best.getDistance()) {
                 best = newTour.clone();
@@ -42,8 +42,8 @@ public class GA {
 
             while (offspring.size() < popSize) {
                 TSP.Tour parent1 = tournamentSelection();
-                TSP.Tour parent2 = tournamentSelection();
-                //TODO preveri, da starša nista enaka
+                TSP.Tour parent2;
+                //DONE preveri, da starša nista enaka
 
                 do {
                     parent2 = tournamentSelection();
@@ -67,12 +67,12 @@ public class GA {
                 }
             }
 
-            //TODO ovrednoti populacijo in shrani najboljšega (best)
+            //DONE ovrednoti populacijo in shrani najboljšega (best)
             //implementacijo lahko naredimo bolj učinkovito tako, da overdnotimo samo tiste, ki so se spremenili (mutirani in križani potomci)
 
             for (TSP.Tour off : offspring) {
                 problem.evaluate(off);
-                if (off.getDistance() < best.getDistance()) {
+                if (best != null && off.getDistance() < best.getDistance()) {
                     best = off.clone();
                 }
             }
@@ -153,9 +153,6 @@ public class GA {
             }
         }
 
-        // NI PRAVILNO
-        // fill nulls with correct cities
-
         for (int i = 0; i < tourSize; i++) {
             if (child1.getPath()[i] == null) {
                 for (int j = 0; j < tourSize; j++) {
@@ -175,33 +172,7 @@ public class GA {
             }
         }
 
-/*        // print parent1
-        System.out.println("\nParent1: ");
-        for (TSP.City city : parent1.getPath()) {
-            if (city == null) {
-                System.out.print("null ");
-            } else
-                System.out.print(city.index + " ");
-        }
-        // print crossover points
-        System.out.println("\nCrossover points: " + crossoverPoint1 + " " + crossoverPoint2);
-        System.out.println("Child1: ");
-        for (TSP.City city : child1.getPath()) {
-            if (city == null) {
-                System.out.print("null ");
-            } else
-                System.out.print(city.index + " ");
-        }
-        System.out.println("\nChild2: ");
-        for (TSP.City city : child2.getPath()) {
-            if (city == null) {
-                System.out.print("null ");
-            } else
-                System.out.print(city.index + " ");
-        }*/
-
         return new TSP.Tour[]{child1, child2};
-        //return null;
     }
 
     private boolean containsCity(TSP.City[] array, TSP.City city, int start, int end) {
@@ -225,10 +196,6 @@ public class GA {
             tournamentParticipants.add(participant);
         }
 
-        //tournamentParticipants.forEach(participant -> System.out.println(participant.getDistance()));
-
         return Collections.min(tournamentParticipants, Comparator.comparingDouble(TSP.Tour::getDistance));
-
-        //return null;
     }
 }
