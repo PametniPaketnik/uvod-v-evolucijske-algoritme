@@ -82,6 +82,23 @@ public class TSP {
         this.maxEvaluations = maxEvaluations;
     }
 
+    public TSP(String path, int maxEvaluations, double[][] citiesData, String pathToWeights) {
+        numberOfEvaluations = 0;
+        this.maxEvaluations = maxEvaluations;
+        this.name = path;
+
+        for (double[] cityData : citiesData) {
+            City city = new City();
+            city.index = (int) cityData[0];
+            city.x = cityData[1];
+            city.y = cityData[2];
+            cities.add(city);
+        }
+        start = cities.get(0);
+
+        loadNewData(pathToWeights);
+    }
+
     public void evaluate(Tour tour) {
         double distance = 0;
         distance += calculateDistance(start, tour.getPath()[0]);
@@ -96,7 +113,7 @@ public class TSP {
     }
 
     private double calculateDistance(City from, City to) {
-        //TODO implement
+        //DONE
         switch (distanceType) {
             case EUCLIDEAN:
                 return Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2));
@@ -108,7 +125,7 @@ public class TSP {
     }
 
     public Tour generateTour() {
-        //TODO generate random tour, use RandomUtils
+        //DONE generate random tour, use RandomUtils DONE
         Tour randomTour = new Tour(numberOfCities);
         List<City> citiesCopy = new ArrayList<>(cities);
 
@@ -116,17 +133,11 @@ public class TSP {
 
         randomTour.setPath(citiesCopy.toArray(new City[0]));
 
-        /*System.out.println();
-        for (City city : randomTour.getPath()) {
-            System.out.print(city.index + " ");
-        }*/
-
         return randomTour;
-        //return null;
     }
 
     private void loadData(String path) {
-        //TODO set starting city, which is always at index 0
+        //DONE set starting city, which is always at index 0
 
         InputStream inputStream = TSP.class.getClassLoader().getResourceAsStream(path);
         if(inputStream == null) {
@@ -146,15 +157,15 @@ public class TSP {
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        System.out.println(lines);
-        //TODO parse data
+
+        //DONE parse data
 
         lines.stream()
-                .filter(line -> line.startsWith("NAME : "))
+                .filter(line -> line.startsWith("NAME"))
                 .findFirst()
                 .ifPresent(nameLine -> {
-                    name = nameLine.substring("NAME : ".length()).trim();
-//                    System.out.println("Name: " + name);
+                    String afterColon = nameLine.substring(nameLine.indexOf(':') + 1).trim();
+                    name = afterColon.split("\s+")[0];
                 });
 
         lines.stream()
@@ -162,9 +173,8 @@ public class TSP {
                 .findFirst()
                 .ifPresent(dimensionLine -> {
                     String afterColon = dimensionLine.substring(dimensionLine.indexOf(':') + 1).trim();
-                    String distanceTypeString = afterColon.split("\s+")[0]; // Extract the first word after the colon
+                    String distanceTypeString = afterColon.split("\s+")[0];
                     numberOfCities = Integer.parseInt(distanceTypeString);
-//                    System.out.println("Number of cities: " + numberOfCities);
                 });
 
         lines.stream()
@@ -172,8 +182,8 @@ public class TSP {
                 .findFirst()
                 .ifPresent(distanceTypeLine -> {
                     String afterColon = distanceTypeLine.substring(distanceTypeLine.indexOf(':') + 1).trim();
-                    String distanceTypeString = afterColon.split("\\s+")[0]; // Extract the first word after the colon
-//                    System.out.println("Distance type: " + distanceTypeString);
+                    String distanceTypeString = afterColon.split("\\s+")[0];
+
                     switch (distanceTypeString) {
                         case "EUC_2D" -> distanceType = DistanceType.EUCLIDEAN;
                         case "EXPLICIT" -> distanceType = DistanceType.WEIGHTED;
@@ -200,11 +210,8 @@ public class TSP {
                 }
             }
 
-//            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
-
             if (!cities.isEmpty()) {
-                start = cities.get(0); // Set the first city as the starting city
-//                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
+                start = cities.get(0);
             }
 
             // load weights from txt file
@@ -226,7 +233,6 @@ public class TSP {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            //System.out.println(linesMatrix);
 
             // read weights
             List<List<Double>> weightsList = new ArrayList<>();
@@ -267,12 +273,10 @@ public class TSP {
                     foundNodeCoordSection = true;
                 }
             }
-
-//            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
+            //cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
 
             if (!cities.isEmpty()) {
-                start = cities.get(0); // Set the first city as the starting city
-//                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
+                start = cities.get(0);
             }
         }
 
@@ -319,22 +323,53 @@ public class TSP {
                 }
             }
 
-            // print weights
-            /*for (double[] weight : weights) {
-                for (double v : weight) {
-                    System.out.print(v + " ");
-                }
-                System.out.println();
-            }
-            System.out.println("Cities:");*/
-//            cities.forEach(city -> System.out.println(city.index + " " + city.x + " " + city.y));
-
             if (!cities.isEmpty()) {
-                start = cities.get(0); // Set the first city as the starting city
-//                System.out.println("Starting city: " + start.index + " " + start.x + " " + start.y);
+                start = cities.get(0);
             }
         }
-//        System.out.println(calculateDistance(start, cities.get(2)));
+    }
+
+    public void loadNewData(String pathToWeights) {
+        distanceType = DistanceType.WEIGHTED;
+        numberOfCities = cities.size();
+
+        InputStream inputStreamMatrix = TSP.class.getClassLoader().getResourceAsStream(pathToWeights);
+        if(inputStreamMatrix == null) {
+            System.err.println("File " + pathToWeights + " not found!");
+            return;
+        }
+
+        List<String> linesMatrix = new ArrayList<>();
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(inputStreamMatrix))) {
+
+            String line = br.readLine();
+            while (line != null) {
+                linesMatrix.add(line);
+                line = br.readLine();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<List<Double>> weightsList = new ArrayList<>();
+        for (String line : linesMatrix) {
+            String[] tokens = line.trim().split("\\s+");
+            List<Double> row = new ArrayList<>();
+            for (String token : tokens) {
+                if (!token.isEmpty()) {
+                    row.add(Double.parseDouble(token));
+                }
+            }
+            weightsList.add(row);
+        }
+
+        weights = new double[weightsList.size()][weightsList.get(0).size()];
+        for (int i = 0; i < weightsList.size(); i++) {
+            for (int j = 0; j < weightsList.get(i).size(); j++) {
+                weights[i][j] = weightsList.get(i).get(j);
+            }
+        }
     }
 
     public int getMaxEvaluations() {
